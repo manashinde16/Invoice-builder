@@ -4,21 +4,14 @@ import { calculateLineTotal } from '../utils/calculations'
 import { SAMPLE_SERVICES } from '../data/services'
 import './LineItem.css'
 
-const LineItem = ({ 
-  item, 
-  onUpdate, 
-  onRemove, 
-  index 
-}) => {
+const LineItem = ({ item, onUpdate, onRemove, index }) => {
   const [service, setService] = useState(item.service || '')
   const [unitPrice, setUnitPrice] = useState(item.unitPrice || 0)
   const [quantity, setQuantity] = useState(item.quantity || 0)
   const [isCustomService, setIsCustomService] = useState(false)
 
-  // Calculate line total whenever unit price or quantity changes
   const lineTotal = calculateLineTotal(unitPrice, quantity)
 
-  // Update parent component when values change
   useEffect(() => {
     onUpdate({
       ...item,
@@ -30,7 +23,6 @@ const LineItem = ({
 
   const handleServiceChange = (e) => {
     const selectedServiceId = e.target.value
-    
     if (selectedServiceId === 'custom') {
       setIsCustomService(true)
       setService('')
@@ -47,23 +39,13 @@ const LineItem = ({
     }
   }
 
-  const handleCustomServiceChange = (e) => {
-    setService(e.target.value)
-  }
+  const handleCustomServiceChange = (e) => setService(e.target.value)
 
-  const handleUnitPriceChange = (e) => {
-    const value = validateNumber(e.target.value)
-    setUnitPrice(value)
-  }
+  const handleUnitPriceChange = (e) => setUnitPrice(validateNumber(e.target.value))
 
-  const handleQuantityChange = (e) => {
-    const value = validateNumber(e.target.value)
-    setQuantity(value)
-  }
+  const handleQuantityChange = (e) => setQuantity(validateNumber(e.target.value))
 
-  const handleRemove = () => {
-    onRemove(item.id)
-  }
+  const handleRemove = () => onRemove(item.id)
 
   return (
     <div className="line-item" data-testid={`line-item-${index}`}>

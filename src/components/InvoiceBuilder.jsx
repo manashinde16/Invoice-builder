@@ -6,13 +6,12 @@ import './InvoiceBuilder.css'
 
 const InvoiceBuilder = () => {
   const [lineItems, setLineItems] = useState([])
-  const [taxRate, setTaxRate] = useState(0.08) // 8% default tax rate
+  const [taxRate, setTaxRate] = useState(0.08)
 
-  // Load data from localStorage on component mount
   useEffect(() => {
     const savedItems = localStorage.getItem('invoice-line-items')
     const savedTaxRate = localStorage.getItem('invoice-tax-rate')
-    
+
     if (savedItems) {
       try {
         const parsedItems = JSON.parse(savedItems)
@@ -21,20 +20,17 @@ const InvoiceBuilder = () => {
         console.error('Error loading saved line items:', error)
       }
     }
-    
+
     if (savedTaxRate) {
       try {
         const parsedTaxRate = parseFloat(savedTaxRate)
-        if (!isNaN(parsedTaxRate) && parsedTaxRate >= 0) {
-          setTaxRate(parsedTaxRate)
-        }
+        if (!isNaN(parsedTaxRate) && parsedTaxRate >= 0) setTaxRate(parsedTaxRate)
       } catch (error) {
         console.error('Error loading saved tax rate:', error)
       }
     }
   }, [])
 
-  // Save to localStorage whenever line items or tax rate changes
   useEffect(() => {
     localStorage.setItem('invoice-line-items', JSON.stringify(lineItems))
   }, [lineItems])
@@ -43,44 +39,26 @@ const InvoiceBuilder = () => {
     localStorage.setItem('invoice-tax-rate', taxRate.toString())
   }, [taxRate])
 
-  // Calculate totals
   const totals = calculateInvoiceTotals(lineItems, taxRate)
 
-  // Generate unique ID for new items
-  const generateId = useCallback(() => {
-    return `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-  }, [])
+  const generateId = useCallback(() => `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, [])
 
-  // Add new line item
   const addLineItem = useCallback(() => {
-    const newItem = {
-      id: generateId(),
-      service: '',
-      unitPrice: 0,
-      quantity: 0,
-    }
-    
+    const newItem = { id: generateId(), service: '', unitPrice: 0, quantity: 0 }
     setLineItems(prev => [...prev, newItem])
   }, [generateId])
 
-  // Update line item
   const updateLineItem = useCallback((updatedItem) => {
-    setLineItems(prev => 
-      prev.map(item => 
-        item.id === updatedItem.id ? validateLineItem(updatedItem) : item
-      )
-    )
+    setLineItems(prev => prev.map(item => (item.id === updatedItem.id ? validateLineItem(updatedItem) : item)))
   }, [])
 
-  // Remove line item
   const removeLineItem = useCallback((itemId) => {
     setLineItems(prev => prev.filter(item => item.id !== itemId))
   }, [])
 
-  // Handle tax rate change
   const handleTaxRateChange = (e) => {
     const value = parseFloat(e.target.value) || 0
-    setTaxRate(Math.max(0, Math.min(1, value / 100))) // Convert percentage to decimal and clamp between 0 and 1
+    setTaxRate(Math.max(0, Math.min(1, value / 100))) // percentage → decimal, clamped
   }
 
   return (
@@ -88,9 +66,7 @@ const InvoiceBuilder = () => {
       <div className="invoice-builder__header">
         <h2>Invoice Details</h2>
         <div className="invoice-builder__tax-control">
-          <label htmlFor="tax-rate" className="tax-rate-label">
-            Tax Rate:
-          </label>
+          <label htmlFor="tax-rate" className="tax-rate-label">Tax Rate:</label>
           <input
             id="tax-rate"
             type="number"
@@ -129,12 +105,7 @@ const InvoiceBuilder = () => {
           </div>
 
           <div className="line-items__add">
-            <button
-              type="button"
-              onClick={addLineItem}
-              className="add-item-btn"
-              data-testid="add-item-button"
-            >
+            <button type="button" onClick={addLineItem} className="add-item-btn" data-testid="add-item-button">
               + Add Item
             </button>
           </div>
@@ -147,16 +118,14 @@ const InvoiceBuilder = () => {
               {formatCurrency(totals.subtotal)}
             </span>
           </div>
-          
+
           <div className="invoice-totals__row">
-            <span className="invoice-totals__label">
-              Tax ({(taxRate * 100).toFixed(1)}%):
-            </span>
+            <span className="invoice-totals__label">Tax ({(taxRate * 100).toFixed(1)}%):</span>
             <span className="invoice-totals__value" data-testid="tax">
               {formatCurrency(totals.tax)}
             </span>
           </div>
-          
+
           <div className="invoice-totals__row invoice-totals__row--total">
             <span className="invoice-totals__label">Total:</span>
             <span className="invoice-totals__value invoice-totals__value--total" data-testid="total">
